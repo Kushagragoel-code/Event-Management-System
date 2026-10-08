@@ -45,10 +45,10 @@ A full-stack web application allowing Admins to create and manage events, while 
 - **Frontend:** `VITE_API_URL`
 
 ## Team Members
-- [Your Name] - [Roll No.] (Team Lead)
-- [Member 1 Name] - [Roll No.]
-- [Member 2 Name] - [Roll No.]
-- [Member 3 Name] - [Roll No.]
+- Kushagra Goel - Roll No-46 (Team Lead)
+- Saurav Kumar - [Roll No.]
+- Udit Agarwal - [Roll No.]
+- Aarav Pathak - [Roll No.]
 
 ## Deployment Links
 - **GitHub Repository:** [URL]
