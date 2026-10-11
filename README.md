@@ -1,56 +1,63 @@
 # Event Management System
 
-## Project Description
-A full-stack web application allowing Admins to create and manage events, while Users can view and register for upcoming events. Built with client-side rendering.
+A full-stack MERN application for organizing and attending college events. Administrators can create, update, and manage events, while regular users can browse, search, filter, and register (RSVP) for events.
 
 ## Features
-- User Authentication (Register/Login) with JWT.
-- Role-based Access Control (Admin vs. User).
-- **Admin:** Create, Read, Update, and Delete events.
-- **User:** View all events and register for events.
+
+- **User Authentication:** JWT-based user login and registration with password hashing (`bcryptjs`).
+- **Role-Based Access Control:** Distinct roles for `User` and `Admin` (with protected admin secret verification).
+- **Admin Event Management:** Create, edit, and delete events with capacity and past-date validation.
+- **User RSVP System:** Users can register for events, see remaining seat counts, and cancel registrations.
+- **Search & Filtering:** Server-side search by title/description, category filtering, and date sorting.
+- **Activity Logging:** Request activity logging to server logs (`logs/access.log`).
 
 ## Tech Stack
-- **Frontend:** React.js, Vite, React Router, Axios
-- **Backend:** Node.js, Express.js, MongoDB Atlas, Mongoose
+
+- **Frontend:** React 19, Vite, React Router 7, Vanilla CSS
+- **Backend:** Node.js, Express.js, MongoDB, Mongoose
 - **Authentication:** JSON Web Tokens (JWT), bcryptjs
 
 ## API Endpoints
-**Auth**
-- `POST /api/auth/register` - Register a new user
-- `POST /api/auth/login` - Login user
 
-**Events**
-- `GET /api/events` - Get all events (Admin/User)
-- `POST /api/events` - Create an event (Admin Only)
-- `GET /api/events/:id` - Get single event details (Admin/User)
-- `PUT /api/events/:id` - Update an event (Admin Only)
-- `DELETE /api/events/:id` - Delete an event (Admin Only)
+### Authentication
+- `POST /api/auth/register` — Register a new account (`User` or `Admin` with `adminKey`)
+- `POST /api/auth/login` — Login user and return JWT token
+- `GET /api/auth/me` — Get current logged-in user profile (Protected)
 
-## Setup Instructions
-1. Clone the repository: `git clone [YOUR_GITHUB_REPO_URL]`
-2. **Backend Setup:**
-   - Navigate to `/Backend`: `cd Backend`
-   - Install dependencies: `npm install`
-   - Create a `.env` file based on `.env.example`.
-   - Start the server: `npm run dev`
-3. **Frontend Setup:**
-   - Navigate to the frontend app: `cd Frontend/vite-project`
-   - Install dependencies: `npm install`
-   - Create a `.env` file based on `.env.example`.
-   - Start the React app: `npm run dev`
+### Events
+- `GET /api/events` — Get all events (supports `?search=`, `?category=`, `?sort=`)
+- `GET /api/events/:id` — Get single event with attendee details
+- `POST /api/events` — Create a new event (Admin only)
+- `PUT /api/events/:id` — Update event details (Admin only)
+- `DELETE /api/events/:id` — Delete an event (Admin only)
+- `POST /api/events/:id/register` — Register / RSVP for an event (Protected)
+- `POST /api/events/:id/cancel` — Cancel event RSVP (Protected)
 
-## Environment Variables
-*See `.env.example` files in both the Backend and Frontend directories.*
-- **Backend:** `PORT`, `MONGO_URI`, `JWT_SECRET`
-- **Frontend:** `VITE_API_URL`
+## Setup & Running Locally
+
+### 1. Backend Setup
+```bash
+cd Backend
+npm install
+npm run dev # or node server.js
+```
+*Create a `.env` file in `/Backend`:*
+```env
+PORT=5000
+MONGO_URI=mongodb://127.0.0.1:27017/event_management
+JWT_SECRET=your_secret_key_here
+ADMIN_KEY=admin123
+```
+
+### 2. Frontend Setup
+```bash
+cd Frontend/vite-project
+npm install
+npm run dev
+```
 
 ## Team Members
-- Kushagra Goel - Roll No-46 (Team Lead)
-- Saurav Kumar - [Roll No.]
-- Udit Agarwal - [Roll No.]
-- Aarav Pathak - [Roll No.]
-
-## Deployment Links
-- **GitHub Repository:** [URL]
-- **Frontend (Vercel):** [URL]
-- **Backend:** [URL]
+- Kushagra Goel (Team Lead)
+- Saurav Kumar
+- Udit Agarwal
+- Aarav Pathak

@@ -1,0 +1,384 @@
+
+Time   : 10/11/2026, 11:32:07 PM
+Method : GET
+URL    : /
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:32:07 PM
+Method : GET
+URL    : /api/events
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:33:18 PM
+Method : GET
+URL    : /api/events
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:33:45 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:25 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:25 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:30 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:30 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:36 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:36 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:39 PM
+Method : GET
+URL    : /api/events?category=General&
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:41 PM
+Method : GET
+URL    : /api/events?category=Technical&
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:44 PM
+Method : GET
+URL    : /api/events?category=General&
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:35:45 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:36:03 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:36:03 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:36:06 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:36:06 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:36:13 PM
+Method : GET
+URL    : /api/events?search=Tec&
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:36:25 PM
+Method : POST
+URL    : /api/auth/login
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:36:50 PM
+Method : POST
+URL    : /api/auth/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:37:04 PM
+Method : POST
+URL    : /api/auth/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:37:31 PM
+Method : POST
+URL    : /api/auth/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:40:31 PM
+Method : POST
+URL    : /api/auth/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:40:36 PM
+Method : POST
+URL    : /api/auth/login
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:03 PM
+Method : POST
+URL    : /api/auth/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:13 PM
+Method : POST
+URL    : /api/auth/login
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:13 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:13 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:20 PM
+Method : POST
+URL    : /api/events/6acb80bb25d41f7e71a1200b/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:20 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:25 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:25 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:26 PM
+Method : POST
+URL    : /api/events/6acb80bb25d41f7e71a1200c/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:26 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:28 PM
+Method : POST
+URL    : /api/events/6acb816425d41f7e71a1200e/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:28 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:28 PM
+Method : POST
+URL    : /api/events/6acb816425d41f7e71a1200e/cancel
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:28 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:30 PM
+Method : POST
+URL    : /api/events/6acb80bb25d41f7e71a1200c/cancel
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:30 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:31 PM
+Method : POST
+URL    : /api/events/6acb80bb25d41f7e71a1200b/cancel
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:31 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:32 PM
+Method : POST
+URL    : /api/events/6acb80bb25d41f7e71a1200b/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:32 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:32 PM
+Method : POST
+URL    : /api/events/6acb80bb25d41f7e71a1200c/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:32 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:33 PM
+Method : POST
+URL    : /api/events/6acb816425d41f7e71a1200e/register
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:42:33 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:48:37 PM
+Method : GET
+URL    : /
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:48:37 PM
+Method : GET
+URL    : /api/events
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:34 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:34 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:37 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:37 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:49 PM
+Method : POST
+URL    : /api/auth/login
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:49 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:49 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:54 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:54 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:59 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:50:59 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:53:55 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------
+
+Time   : 10/11/2026, 11:53:55 PM
+Method : GET
+URL    : /api/events?
+IP     : ::1
+----------------------------------

@@ -1,37 +1,46 @@
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
+import { useAuth } from '../hooks/useAuth';
 
+// header navigation bar
 function Navbar() {
-  const { isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, logout } = useAuth();
   const navigate = useNavigate();
 
+  // logout karke login page par bhej rahe
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
   return (
-    <nav className="navbar">
-      <div className="navbar-logo">
-        <Link to="/">EventApp</Link>
-      </div>
-      <div className="navbar-links">
-        <Link to="/">Home</Link>
+    <header className="navbar">
+      <Link to="/" className="brand">
+        Event Management
+      </Link>
+      <nav>
+        <NavLink to="/" end>
+          Home
+        </NavLink>
         {isAuthenticated ? (
           <>
-            <Link to="/dashboard">Dashboard</Link>
-            <button type="button" onClick={handleLogout} className="logout-btn">
+            <NavLink to="/dashboard">Dashboard</NavLink>
+            {user && (
+              <span className="nav-user">
+                {user.name} ({user.role})
+              </span>
+            )}
+            <button type="button" onClick={handleLogout} className="btn btn-small btn-danger">
               Logout
             </button>
           </>
         ) : (
           <>
-            <Link to="/login">Login</Link>
-            <Link to="/register">Register</Link>
+            <NavLink to="/login">Login</NavLink>
+            <NavLink to="/register">Register</NavLink>
           </>
         )}
-      </div>
-    </nav>
+      </nav>
+    </header>
   );
 }
 

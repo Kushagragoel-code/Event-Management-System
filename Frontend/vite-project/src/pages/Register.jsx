@@ -1,81 +1,122 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-
-const url = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import { registerUser } from '../api/api';
 
 function Register() {
-  const [form, setform] = useState({
+  const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'User'
+    role: 'User',
+    adminKey: ''
   });
-  const nav = useNavigate();
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  function set(e) {
-    setform({ ...form, [e.target.name]: e.target.value });
+  // inputs update karne ke liye
+  function handleChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
   }
 
-  async function sub(e) {
+  // naya user register karne ke liye
+  async function handleSubmit(e) {
     e.preventDefault();
-    const res = await fetch(`${url}/api/auth/register`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(form)
-    });
-    if (res.ok) {
-      nav('/login');
+    setError('');
+    setSuccess('');
+    setLoading(true);
+
+    try {
+      const data = await registerUser(form);
+      setSuccess(data.message || 'Registration successful! Redirecting to login...');
+      setTimeout(() => {
+        navigate('/login');
+      }, 1200);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
   }
 
   return (
-    <div className="auth-card">
-      <h2>Register</h2>
-      <form onSubmit={sub}>
-        <div className="form-group">
-          <label>Name</label>
+    <div className="auth-container">
+      <form className="form" onSubmit={handleSubmit}>
+        <h2>Create an Account</h2>
+
+        {error && <p className="alert">{error}</p>}
+        {success && <p className="status success">{success}</p>}
+
+        <label>
+          Full Name
           <input
             type="text"
             name="name"
+            placeholder="e.g. Rahul Sharma"
             value={form.name}
-            onChange={set}
+            onChange={handleChange}
             required
           />
-        </div>
-        <div className="form-group">
-          <label>Email</label>
+        </label>
+
+        <label>
+          Email Address
           <input
             type="email"
             name="email"
+            placeholder="e.g. rahul@gmail.com"
             value={form.email}
-            onChange={set}
+            onChange={handleChange}
             required
           />
-        </div>
-        <div className="form-group">
-          <label>Password</label>
+        </label>
+
+        <label>
+          Password
           <input
             type="password"
             name="password"
+            placeholder="At least 6 characters"
             value={form.password}
-            onChange={set}
+            onChange={handleChange}
             required
           />
-        </div>
-        <div className="form-group">
-          <label>Role</label>
-          <select name="role" value={form.role} onChange={set}>
-            <option value="User">User</option>
-            <option value="Admin">Admin</option>
+        </label>
+
+        <label>
+          Account Role
+          <select name="role" value={form.role} onChange={handleChange}>
+            <option value="User">Regular User (Browse & RSVP)</option>
+            <option value="Admin">Admin (Create & Manage Events)</option>
           </select>
+        </label>
+
+        {/* agar admin select kiya to secret key ka input aayega */}
+        {form.role === 'Admin' && (
+          <label>
+            Admin Secret Key
+            <input
+              type="password"
+              name="adminKey"
+              placeholder="Enter secret key (default: admin123)"
+              value={form.adminKey}
+              onChange={handleChange}
+              required
+            />
+          </label>
+        )}
+
+        <div className="actions">
+          <button type="submit" className="btn" disabled={loading}>
+            {loading ? 'Registering…' : 'Register'}
+          </button>
         </div>
-        <button type="submit" className="btn-primary">
-          Register
-        </button>
+
+        <p className="form-footer">
+          Already have an account? <Link to="/login">Login here</Link>
+        </p>
       </form>
-      <p className="auth-switch">
-        Already have an account? <Link to="/login">Login</Link>
-      </p>
     </div>
   );
 }

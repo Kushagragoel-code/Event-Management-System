@@ -1,381 +1,165 @@
-import { useState, useEffect } from 'react';
-import { useAuth } from '../context/AuthContext';
-
-const url = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-
-const init = {
-  title: '',
-  description: '',
-  date: '',
-  venue: '',
-  organizer: '',
-  capacity: '',
-  category: 'General'
-};
+import { useEffect, useState } from 'react';
+import { useAuth } from '../hooks/useAuth';
+import EventForm from '../components/EventForm';
+import { getEvents, createEvent, updateEvent, deleteEvent, registerForEvent, cancelRegistration } from '../api/api';
 
 function Dashboard() {
   const { user, userRole, token } = useAuth();
-  const [list, setlist] = useState([]);
-  const [form, setform] = useState(init);
-  const [edit, setedit] = useState(null);
-  const [cat, setcat] = useState('All');
-  const [sort, setsort] = useState('default');
-  const [err, seterr] = useState('');
-  const [registeringId, setRegisteringId] = useState(null);
+  const isAdmin = userRole === 'Admin';
 
-  const adm = userRole === 'Admin';
+  // events list aur filters ki state
+  const [events, setEvents] = useState([]);
+  const [search, setSearch] = useState('');
+  const [category, setCategory] = useState('All');
 
+  // form open/close aur edit state
+  const [showForm, setShowForm] = useState(false);
+  const [eventToEdit, setEventToEdit] = useState(null);
+
+  // events reload karne ke liye function
+  const loadEvents = async () => {
+    try {
+      const data = await getEvents(category, search);
+      setEvents(data);
+    } catch {
+      alert('Failed to load events. Please try again.');
+    }
+  };
+
+  // category badalne pe ya page start hone pe events fetch honge
   useEffect(() => {
-    async function get() {
-      try {
-        const res = await fetch(`${url}/api/events`);
-        const data = await res.json();
-        if (res.ok && data.data) {
-          setlist(data.data);
-        } else {
-          seterr(data.message || 'Failed to fetch events');
-        }
-      } catch {
-        seterr('Failed to connect to server');
-      }
+    getEvents(category, '')
+      .then((data) => setEvents(data))
+      .catch(() => alert('Failed to load events. Please try again.'));
+  }, [category]);
+
+  // admin event save ya update karega
+  const handleSaveEvent = async (formData) => {
+    if (eventToEdit) {
+      await updateEvent(eventToEdit._id, formData, token);
+    } else {
+      await createEvent(formData, token);
     }
-    get();
-  }, []);
+    
+    // form band karke list refresh kar rahe
+    setShowForm(false);
+    setEventToEdit(null);
+    loadEvents();
+  };
 
-  function set(e) {
-    setform({ ...form, [e.target.name]: e.target.value });
-  }
-
-  async function sub(e) {
-    e.preventDefault();
-    let api = `${url}/api/events`;
-    let req = 'POST';
-    if (edit) {
-      api = `${url}/api/events/${edit}`;
-      req = 'PUT';
+  // admin event delete karega
+  const handleDelete = async (id) => {
+    if (window.confirm('Are you sure you want to delete this event?')) {
+      await deleteEvent(id, token);
+      loadEvents();
     }
+  };
 
-    let head = { 'Content-Type': 'application/json' };
-    if (token) {
-      head.Authorization = `Bearer ${token}`;
-    }
-
-    try {
-      const res = await fetch(api, {
-        method: req,
-        headers: head,
-        body: JSON.stringify({ ...form, capacity: Number(form.capacity) })
-      });
-      const data = await res.json();
-      if (!res.ok || !data.data) {
-        alert(data.message || 'Operation failed');
-        return;
-      }
-
-      if (edit) {
-        setlist((prev) =>
-          prev.map((ev) => {
-            if (ev._id === edit) return data.data;
-            return ev;
-          })
-        );
-        setedit(null);
-      } else {
-        setlist((prev) => [data.data, ...prev]);
-      }
-      setform(init);
-    } catch {
-      alert('Failed to save event');
-    }
-  }
-
-  function pick(ev) {
-    setedit(ev._id);
-    let d = '';
-    if (ev.date) {
-      d = ev.date.split('T')[0];
-    }
-    setform({
-      title: ev.title,
-      description: ev.description,
-      date: d,
-      venue: ev.venue,
-      organizer: ev.organizer,
-      capacity: ev.capacity,
-      category: ev.category || 'General'
-    });
+  // edit form open karne ke liye
+  const openEditForm = (ev) => {
+    const formattedEvent = { ...ev, date: ev.date ? ev.date.split('T')[0] : '' };
+    setEventToEdit(formattedEvent);
+    setShowForm(true);
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  };
 
-  async function del(id) {
-    if (!confirm('Are you sure you want to delete this event?')) {
-      return;
-    }
-    let head = {};
-    if (token) {
-      head.Authorization = `Bearer ${token}`;
-    }
-    try {
-      const res = await fetch(`${url}/api/events/${id}`, {
-        method: 'DELETE',
-        headers: head
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setlist((prev) => prev.filter((ev) => ev._id !== id));
-      } else {
-        alert(data.message || 'Failed to delete event');
-      }
-    } catch {
-      alert('Failed to delete event');
-    }
-  }
+  // user rsvp register karega
+  const handleRsvp = async (id) => {
+    await registerForEvent(id, token);
+    loadEvents();
+  };
 
-  function stop() {
-    setedit(null);
-    setform(init);
-  }
-
-  async function rsvp(id) {
-    try {
-      setRegisteringId(id);
-      const res = await fetch(`${url}/api/events/${id}/register`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (res.ok && data.data) {
-        setlist((prev) =>
-          prev.map((ev) => {
-            if (ev._id === id) return data.data;
-            return ev;
-          })
-        );
-        alert(data.message || 'Registered for event successfully');
-      } else {
-        alert(data.message || 'Failed to register for event');
-      }
-    } catch {
-      alert('Failed to register for event');
-    } finally {
-      setRegisteringId(null);
-    }
-  }
-
-  function wipe() {
-    setcat('All');
-    setsort('default');
-  }
-
-  function done(ev) {
-    if (!user) return false;
-    if (!ev.attendees) return false;
-    let me = String(user.id || user._id || '');
-    for (let att of ev.attendees) {
-      let id = att;
-      if (typeof att === 'object' && att !== null) {
-        id = att._id || att.id;
-      }
-      if (String(id) === me) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  const cats = ['All', ...new Set(list.map((ev) => ev.category || 'General'))];
-
-  let rows = list;
-  if (cat !== 'All') {
-    rows = rows.filter((ev) => (ev.category || 'General') === cat);
-  }
-  if (sort === 'asc') {
-    rows = [...rows].sort((a, b) => new Date(a.date) - new Date(b.date));
-  }
-  if (sort === 'desc') {
-    rows = [...rows].sort((a, b) => new Date(b.date) - new Date(a.date));
-  }
-
-  let head = 'Add New Event';
-  let btn = 'Create Event';
-  if (edit) {
-    head = 'Edit Event';
-    btn = 'Update Event';
-  }
+  // user rsvp cancel karega
+  const handleCancelRsvp = async (id) => {
+    await cancelRegistration(id, token);
+    loadEvents();
+  };
 
   return (
-    <div className="page-container">
-      <div className="dashboard-header">
-        <h1>Event Dashboard</h1>
-        {user && <span className="user-badge">{user.name} ({userRole})</span>}
+    <section>
+      <div className="page-head">
+        <h1>Events Dashboard</h1>
+        {isAdmin && !showForm && (
+          <button className="btn" onClick={() => setShowForm(true)}>+ Create Event</button>
+        )}
       </div>
 
-      {adm && (
-        <form className="event-form" onSubmit={sub}>
-          <h2>{head}</h2>
-          <div className="form-grid">
-            <input
-              name="title"
-              placeholder="Title"
-              value={form.title}
-              onChange={set}
-              required
-            />
-            <input
-              name="venue"
-              placeholder="Venue"
-              value={form.venue}
-              onChange={set}
-              required
-            />
-            <input
-              name="date"
-              type="date"
-              value={form.date}
-              onChange={set}
-              required
-            />
-            <input
-              name="organizer"
-              placeholder="Organizer"
-              value={form.organizer}
-              onChange={set}
-              required
-            />
-            <input
-              name="capacity"
-              type="number"
-              placeholder="Capacity"
-              value={form.capacity}
-              onChange={set}
-              required
-            />
-            <input
-              name="category"
-              placeholder="Category"
-              value={form.category}
-              onChange={set}
-            />
-          </div>
-          <textarea
-            name="description"
-            placeholder="Description"
-            value={form.description}
-            onChange={set}
-            required
-          />
-          <div className="form-actions">
-            <button type="submit" className="btn-primary">
-              {btn}
-            </button>
-            {edit && (
-              <button type="button" className="btn-secondary" onClick={stop}>
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
+      {/* admin ka add ya edit form */}
+      {showForm && (
+        <EventForm
+          submitLabel={eventToEdit ? 'Update Event' : 'Create Event'}
+          initialValues={eventToEdit}
+          onSubmit={handleSaveEvent}
+          onCancel={() => {
+            setShowForm(false);
+            setEventToEdit(null);
+          }}
+        />
       )}
 
-      <div className="filters">
-        <div className="filter-group">
-          <label>Category</label>
-          <select value={cat} onChange={(e) => setcat(e.target.value)}>
-            {cats.map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-        </div>
+      {/* search aur filter bar */}
+      <div className="toolbar">
+        <form onSubmit={(e) => { e.preventDefault(); loadEvents(); }}>
+          <input 
+            placeholder="Search events..." 
+            value={search} 
+            onChange={(e) => setSearch(e.target.value)} 
+          />
+          <button type="submit" className="btn btn-small">Search</button>
+        </form>
 
-        <div className="filter-group">
-          <label>Sort by Date</label>
-          <select value={sort} onChange={(e) => setsort(e.target.value)}>
-            <option value="default">Default</option>
-            <option value="asc">Earliest First</option>
-            <option value="desc">Latest First</option>
-          </select>
-        </div>
-
-        <button type="button" className="clear-btn" onClick={wipe}>
-          Clear Filters
-        </button>
+        <select value={category} onChange={(e) => setCategory(e.target.value)}>
+          <option value="All">All Categories</option>
+          <option value="General">General</option>
+          <option value="Technical">Technical</option>
+          <option value="Cultural">Cultural</option>
+        </select>
       </div>
 
-      {err && <p className="error">{err}</p>}
-
-      <div className="events-list">
-        <h2>Events ({rows.length})</h2>
-        {rows.length === 0 && <p className="empty">No events found.</p>}
-        {rows.map((ev) => {
-          const reg = done(ev);
-          let num = 0;
-          if (ev.attendees) {
-            num = ev.attendees.length;
-          }
-          const full = num >= ev.capacity;
-          const isBusy = registeringId === ev._id;
-
-          let txt = 'RSVP';
-          if (isBusy) {
-            txt = 'Registering...';
-          } else if (reg) {
-            txt = 'Registered';
-          } else if (full) {
-            txt = 'Full';
-          }
-
-          let dis = false;
-          if (reg || full || isBusy || registeringId !== null) {
-            dis = true;
-          }
-
-          let date = '';
-          if (ev.date) {
-            date = new Date(ev.date).toLocaleDateString();
-          }
+      {/* events list render kar rahe */}
+      <div className="grid">
+        {events.map((ev) => {
+          // check kar rahe user registered hai ya nahi
+          const isRegistered = ev.attendees?.some((a) => (a._id || a) === user?.id);
+          const isFull = ev.attendees?.length >= ev.capacity;
 
           return (
-            <div key={ev._id} className="event-card">
-              <div className="event-card-header">
-                <div className="card-title-group">
-                  <h3>{ev.title}</h3>
-                  <span className="badge">{ev.category || 'General'}</span>
-                </div>
-                {adm && (
-                  <div className="card-actions">
-                    <button type="button" className="btn-edit" onClick={() => pick(ev)}>
-                      Edit
-                    </button>
-                    <button type="button" className="btn-delete" onClick={() => del(ev._id)}>
-                      Delete
-                    </button>
-                  </div>
+            <div key={ev._id} className="card">
+              <h2>{ev.title} <span className="badge">{ev.category}</span></h2>
+              <p>{ev.description}</p>
+              
+              <p><strong>Date:</strong> {ev.date ? new Date(ev.date).toLocaleDateString() : 'TBD'}</p>
+              <p><strong>Venue:</strong> {ev.venue}</p>
+              <p><strong>Organizer:</strong> {ev.organizer}</p>
+              <p><strong>Seats:</strong> {ev.attendees?.length || 0} / {ev.capacity}</p>
+
+              <div className="actions">
+                {isAdmin ? (
+                  <>
+                    <button className="btn btn-small" onClick={() => openEditForm(ev)}>Edit</button>
+                    <button className="btn btn-small btn-danger" onClick={() => handleDelete(ev._id)}>Delete</button>
+                  </>
+                ) : (
+                  <>
+                    {isRegistered ? (
+                      <button className="btn btn-small btn-danger" onClick={() => handleCancelRsvp(ev._id)}>Cancel RSVP</button>
+                    ) : (
+                      <button 
+                        className="btn btn-small btn-primary" 
+                        disabled={isFull} 
+                        onClick={() => handleRsvp(ev._id)}
+                      >
+                        {isFull ? 'Sold Out' : 'RSVP Now'}
+                      </button>
+                    )}
+                  </>
                 )}
-                {user && userRole === 'User' && (
-                  <div className="card-actions">
-                    <button
-                      type="button"
-                      className="btn-rsvp"
-                      disabled={dis}
-                      onClick={() => rsvp(ev._id)}
-                    >
-                      {txt}
-                    </button>
-                  </div>
-                )}
-              </div>
-              <p className="desc">{ev.description}</p>
-              <div className="event-meta">
-                <span><strong>Date:</strong> {date}</span>
-                <span><strong>Venue:</strong> {ev.venue}</span>
-                <span><strong>Organizer:</strong> {ev.organizer}</span>
-                <span><strong>Capacity:</strong> {num} / {ev.capacity}</span>
               </div>
             </div>
           );
         })}
       </div>
-    </div>
+    </section>
   );
 }
 
