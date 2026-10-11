@@ -1,0 +1,10 @@
+function Login() {
+  return (
+    <div className="page-container">
+      <h1>Login Page</h1>
+      <p>Login form placeholder.</p>
+    </div>
+  );
+}
+
+export default Login;
