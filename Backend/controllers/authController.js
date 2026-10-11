@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 
 const register = async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { name, email, password, role, adminKey } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ success: false, message: 'Please provide all required fields' });
@@ -15,14 +15,21 @@ const register = async (req, res) => {
       return res.status(400).json({ success: false, message: 'User already exists' });
     }
 
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+    let userRole = 'User';
+    if (role === 'Admin' || adminKey) {
+      const secret = process.env.ADMIN_KEY || 'admin123';
+      if (adminKey === secret) {
+        userRole = 'Admin';
+      } else {
+        return res.status(400).json({ success: false, message: 'Invalid admin key' });
+      }
+    }
 
     const user = await User.create({
       name,
       email,
-      password: hashedPassword,
-      role: 'User'
+      password,
+      role: userRole
     });
 
     res.status(201).json({
@@ -80,7 +87,29 @@ const login = async (req, res) => {
   }
 };
 
+const getMe = async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select('-password');
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   register,
-  login
+  login,
+  getMe
 };

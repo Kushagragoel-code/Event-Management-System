@@ -6,7 +6,8 @@ const {
   createEvent,
   updateEvent,
   deleteEvent,
-  registerForEvent
+  registerForEvent,
+  cancelEventRegistration
 } = require('../controllers/eventController');
 const {
   authenticateUser,
@@ -19,5 +20,7 @@ router.post('/', authenticateUser, requireAdmin, createEvent);
 router.put('/:id', authenticateUser, requireAdmin, updateEvent);
 router.delete('/:id', authenticateUser, requireAdmin, deleteEvent);
 router.post('/:id/register', authenticateUser, registerForEvent);
+router.post('/:id/cancel', authenticateUser, cancelEventRegistration);
+router.post('/:id/unregister', authenticateUser, cancelEventRegistration);
 
 module.exports = router;
