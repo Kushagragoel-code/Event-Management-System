@@ -30,7 +30,7 @@ const getEventById = async (req, res) => {
 
 const createEvent = async (req, res) => {
   try {
-    const { title, description, date, venue, organizer, capacity } = req.body;
+    const { title, description, date, venue, organizer, capacity, category } = req.body;
 
     if (!title || !description || !date || !venue || !organizer || capacity === undefined) {
       return res.status(400).json({ success: false, message: 'Please fill in all required fields' });
@@ -43,6 +43,7 @@ const createEvent = async (req, res) => {
       venue,
       organizer,
       capacity,
+      category: category || 'Other',
       attendees: []
     });
 
