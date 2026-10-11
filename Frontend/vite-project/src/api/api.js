@@ -1,4 +1,4 @@
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5001/api';
+const API = import.meta.env.VITE_API_URL || 'https://event-management-system-1y7c.onrender.com/api';
 
 // backend api request bhejne ke liye common helper function
 async function request(endpoint, method = 'GET', data = null, token = null) {
@@ -14,6 +14,14 @@ async function request(endpoint, method = 'GET', data = null, token = null) {
     headers: headers,
     body: data ? JSON.stringify(data) : undefined
   });
+
+  const contentType = res.headers.get('content-type') || '';
+  if (!contentType.includes('application/json')) {
+    if (!res.ok) {
+      throw new Error(`Server returned error (${res.status}). Please try again.`);
+    }
+    throw new Error('Server returned unexpected response format.');
+  }
 
   const result = await res.json();
   if (!res.ok) throw new Error(result.message || 'Something went wrong. Please try again.');
