@@ -20,15 +20,23 @@ function Dashboard() {
   const [edit, setedit] = useState(null);
   const [cat, setcat] = useState('All');
   const [sort, setsort] = useState('default');
+  const [err, seterr] = useState('');
+  const [registeringId, setRegisteringId] = useState(null);
 
   const adm = userRole === 'Admin';
 
   useEffect(() => {
     async function get() {
-      const res = await fetch(`${url}/api/events`);
-      const data = await res.json();
-      if (data.data) {
-        setlist(data.data);
+      try {
+        const res = await fetch(`${url}/api/events`);
+        const data = await res.json();
+        if (res.ok && data.data) {
+          setlist(data.data);
+        } else {
+          seterr(data.message || 'Failed to fetch events');
+        }
+      } catch {
+        seterr('Failed to connect to server');
       }
     }
     get();
@@ -52,22 +60,33 @@ function Dashboard() {
       head.Authorization = `Bearer ${token}`;
     }
 
-    const res = await fetch(api, {
-      method: req,
-      headers: head,
-      body: JSON.stringify({ ...form, capacity: Number(form.capacity) })
-    });
-    const data = await res.json();
-    if (edit) {
-      setlist(list.map((ev) => {
-        if (ev._id === edit) return data.data;
-        return ev;
-      }));
-      setedit(null);
-    } else {
-      setlist([data.data, ...list]);
+    try {
+      const res = await fetch(api, {
+        method: req,
+        headers: head,
+        body: JSON.stringify({ ...form, capacity: Number(form.capacity) })
+      });
+      const data = await res.json();
+      if (!res.ok || !data.data) {
+        alert(data.message || 'Operation failed');
+        return;
+      }
+
+      if (edit) {
+        setlist((prev) =>
+          prev.map((ev) => {
+            if (ev._id === edit) return data.data;
+            return ev;
+          })
+        );
+        setedit(null);
+      } else {
+        setlist((prev) => [data.data, ...prev]);
+      }
+      setform(init);
+    } catch {
+      alert('Failed to save event');
     }
-    setform(init);
   }
 
   function pick(ev) {
@@ -89,15 +108,27 @@ function Dashboard() {
   }
 
   async function del(id) {
+    if (!confirm('Are you sure you want to delete this event?')) {
+      return;
+    }
     let head = {};
     if (token) {
       head.Authorization = `Bearer ${token}`;
     }
-    await fetch(`${url}/api/events/${id}`, {
-      method: 'DELETE',
-      headers: head
-    });
-    setlist(list.filter((ev) => ev._id !== id));
+    try {
+      const res = await fetch(`${url}/api/events/${id}`, {
+        method: 'DELETE',
+        headers: head
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setlist((prev) => prev.filter((ev) => ev._id !== id));
+      } else {
+        alert(data.message || 'Failed to delete event');
+      }
+    } catch {
+      alert('Failed to delete event');
+    }
   }
 
   function stop() {
@@ -106,15 +137,29 @@ function Dashboard() {
   }
 
   async function rsvp(id) {
-    const res = await fetch(`${url}/api/events/${id}/register`, {
-      method: 'POST',
-      headers: { Authorization: `Bearer ${token}` }
-    });
-    const data = await res.json();
-    setlist(list.map((ev) => {
-      if (ev._id === id) return data.data;
-      return ev;
-    }));
+    try {
+      setRegisteringId(id);
+      const res = await fetch(`${url}/api/events/${id}/register`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (res.ok && data.data) {
+        setlist((prev) =>
+          prev.map((ev) => {
+            if (ev._id === id) return data.data;
+            return ev;
+          })
+        );
+        alert(data.message || 'Registered for event successfully');
+      } else {
+        alert(data.message || 'Failed to register for event');
+      }
+    } catch {
+      alert('Failed to register for event');
+    } finally {
+      setRegisteringId(null);
+    }
   }
 
   function wipe() {
@@ -256,6 +301,8 @@ function Dashboard() {
         </button>
       </div>
 
+      {err && <p className="error">{err}</p>}
+
       <div className="events-list">
         <h2>Events ({rows.length})</h2>
         {rows.length === 0 && <p className="empty">No events found.</p>}
@@ -266,19 +313,19 @@ function Dashboard() {
             num = ev.attendees.length;
           }
           const full = num >= ev.capacity;
+          const isBusy = registeringId === ev._id;
 
           let txt = 'RSVP';
-          if (reg) {
+          if (isBusy) {
+            txt = 'Registering...';
+          } else if (reg) {
             txt = 'Registered';
           } else if (full) {
             txt = 'Full';
           }
 
           let dis = false;
-          if (reg) {
-            dis = true;
-          }
-          if (full) {
+          if (reg || full || isBusy || registeringId !== null) {
             dis = true;
           }
 
