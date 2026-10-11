@@ -9,7 +9,8 @@ const emptyForm = {
   date: '',
   venue: '',
   organizer: '',
-  capacity: ''
+  capacity: '',
+  category: 'General'
 };
 
 function Dashboard() {
@@ -17,6 +18,8 @@ function Dashboard() {
   const [events, setEvents] = useState([]);
   const [formData, setFormData] = useState(emptyForm);
   const [editingId, setEditingId] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [sortOrder, setSortOrder] = useState('default');
   const [error, setError] = useState('');
 
   const isAdmin = userRole === 'Admin';
@@ -71,7 +74,8 @@ function Dashboard() {
       date: event.date ? event.date.split('T')[0] : '',
       venue: event.venue,
       organizer: event.organizer,
-      capacity: event.capacity
+      capacity: event.capacity,
+      category: event.category || 'General'
     });
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
@@ -95,6 +99,24 @@ function Dashboard() {
   const handleCancelEdit = () => {
     setEditingId(null);
     setFormData(emptyForm);
+  };
+
+  const categories = ['All', ...new Set(events.map((e) => e.category || 'General'))];
+
+  let displayedEvents = events.filter((e) => {
+    if (selectedCategory === 'All') return true;
+    return (e.category || 'General') === selectedCategory;
+  });
+
+  if (sortOrder === 'asc') {
+    displayedEvents = [...displayedEvents].sort((a, b) => new Date(a.date) - new Date(b.date));
+  } else if (sortOrder === 'desc') {
+    displayedEvents = [...displayedEvents].sort((a, b) => new Date(b.date) - new Date(a.date));
+  }
+
+  const handleClearFilters = () => {
+    setSelectedCategory('All');
+    setSortOrder('default');
   };
 
   return (
@@ -144,6 +166,12 @@ function Dashboard() {
               onChange={handleChange}
               required
             />
+            <input
+              name="category"
+              placeholder="Category"
+              value={formData.category}
+              onChange={handleChange}
+            />
           </div>
           <textarea
             name="description"
@@ -165,17 +193,54 @@ function Dashboard() {
         </form>
       )}
 
+      <div className="filters">
+        <div className="filter-group">
+          <label htmlFor="filter-cat">Category</label>
+          <select
+            id="filter-cat"
+            value={selectedCategory}
+            onChange={(e) => setSelectedCategory(e.target.value)}
+          >
+            {categories.map((cat) => (
+              <option key={cat} value={cat}>
+                {cat}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="filter-group">
+          <label htmlFor="filter-sort">Sort by Date</label>
+          <select
+            id="filter-sort"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value="default">Default</option>
+            <option value="asc">Earliest First</option>
+            <option value="desc">Latest First</option>
+          </select>
+        </div>
+
+        <button type="button" className="clear-btn" onClick={handleClearFilters}>
+          Clear Filters
+        </button>
+      </div>
+
       {error && <p className="error">{error}</p>}
 
       <div className="events-list">
-        <h2>All Events</h2>
-        {events.length === 0 ? (
+        <h2>Events ({displayedEvents.length})</h2>
+        {displayedEvents.length === 0 ? (
           <p className="empty">No events found.</p>
         ) : (
-          events.map((event) => (
+          displayedEvents.map((event) => (
             <div key={event._id} className="event-card">
               <div className="event-card-header">
-                <h3>{event.title}</h3>
+                <div className="card-title-group">
+                  <h3>{event.title}</h3>
+                  <span className="badge">{event.category || 'General'}</span>
+                </div>
                 {isAdmin && (
                   <div className="card-actions">
                     <button type="button" className="btn-edit" onClick={() => handleEdit(event)}>
