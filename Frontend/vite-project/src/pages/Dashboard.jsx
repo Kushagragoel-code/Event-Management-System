@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+const url = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 const init = {
   title: '',
@@ -15,83 +15,68 @@ const init = {
 
 function Dashboard() {
   const { user, userRole, token } = useAuth();
-  const [list, setList] = useState([]);
-  const [form, setForm] = useState(init);
-  const [edit, setEdit] = useState(null);
-  const [cat, setCat] = useState('All');
-  const [sort, setSort] = useState('default');
-  const [err, setErr] = useState('');
-  const [busy, setBusy] = useState(null);
+  const [list, setlist] = useState([]);
+  const [form, setform] = useState(init);
+  const [edit, setedit] = useState(null);
+  const [cat, setcat] = useState('All');
+  const [sort, setsort] = useState('default');
 
-  const isAdmin = userRole === 'Admin';
+  const adm = userRole === 'Admin';
 
   useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch(`${API_URL}/api/events`);
-        const data = await res.json();
-        if (data.data) {
-          setList(data.data);
-        }
-      } catch (e) {
-        setErr(e.message);
+    async function get() {
+      const res = await fetch(`${url}/api/events`);
+      const data = await res.json();
+      if (data.data) {
+        setlist(data.data);
       }
     }
-    load();
+    get();
   }, []);
 
-  function onChange(e) {
-    setForm({ ...form, [e.target.name]: e.target.value });
+  function set(e) {
+    setform({ ...form, [e.target.name]: e.target.value });
   }
 
-  async function onSubmit(e) {
+  async function sub(e) {
     e.preventDefault();
-    let url = `${API_URL}/api/events`;
-    let method = 'POST';
+    let api = `${url}/api/events`;
+    let req = 'POST';
     if (edit) {
-      url = `${API_URL}/api/events/${edit}`;
-      method = 'PUT';
+      api = `${url}/api/events/${edit}`;
+      req = 'PUT';
     }
 
-    let headers = { 'Content-Type': 'application/json' };
+    let head = { 'Content-Type': 'application/json' };
     if (token) {
-      headers.Authorization = `Bearer ${token}`;
+      head.Authorization = `Bearer ${token}`;
     }
 
-    try {
-      const res = await fetch(url, {
-        method: method,
-        headers: headers,
-        body: JSON.stringify({ ...form, capacity: Number(form.capacity) })
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.message || 'Error saving event');
-        return;
-      }
-
-      if (edit) {
-        setList(list.map((ev) => {
-          if (ev._id === edit) return data.data;
-          return ev;
-        }));
-        setEdit(null);
-      } else {
-        setList([data.data, ...list]);
-      }
-      setForm(init);
-    } catch (e) {
-      alert(e.message);
+    const res = await fetch(api, {
+      method: req,
+      headers: head,
+      body: JSON.stringify({ ...form, capacity: Number(form.capacity) })
+    });
+    const data = await res.json();
+    if (edit) {
+      setlist(list.map((ev) => {
+        if (ev._id === edit) return data.data;
+        return ev;
+      }));
+      setedit(null);
+    } else {
+      setlist([data.data, ...list]);
     }
+    setform(init);
   }
 
-  function onEdit(ev) {
-    setEdit(ev._id);
+  function pick(ev) {
+    setedit(ev._id);
     let d = '';
     if (ev.date) {
       d = ev.date.split('T')[0];
     }
-    setForm({
+    setform({
       title: ev.title,
       description: ev.description,
       date: d,
@@ -103,71 +88,50 @@ function Dashboard() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  async function onDelete(id) {
-    if (!confirm('Delete this event?')) return;
-    try {
-      let headers = {};
-      if (token) {
-        headers.Authorization = `Bearer ${token}`;
-      }
-      const res = await fetch(`${API_URL}/api/events/${id}`, {
-        method: 'DELETE',
-        headers: headers
-      });
-      if (!res.ok) {
-        alert('Could not delete event');
-        return;
-      }
-      setList(list.filter((ev) => ev._id !== id));
-    } catch (e) {
-      alert(e.message);
+  async function del(id) {
+    let head = {};
+    if (token) {
+      head.Authorization = `Bearer ${token}`;
     }
+    await fetch(`${url}/api/events/${id}`, {
+      method: 'DELETE',
+      headers: head
+    });
+    setlist(list.filter((ev) => ev._id !== id));
   }
 
-  function onCancel() {
-    setEdit(null);
-    setForm(init);
+  function stop() {
+    setedit(null);
+    setform(init);
   }
 
-  async function onRSVP(id) {
-    setBusy(id);
-    try {
-      const res = await fetch(`${API_URL}/api/events/${id}/register`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        alert(data.message || 'RSVP failed');
-        setBusy(null);
-        return;
-      }
-      setList(list.map((ev) => {
-        if (ev._id === id) return data.data;
-        return ev;
-      }));
-      alert('Registered successfully!');
-    } catch (e) {
-      alert(e.message);
-    } finally {
-      setBusy(null);
-    }
+  async function rsvp(id) {
+    const res = await fetch(`${url}/api/events/${id}/register`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    const data = await res.json();
+    setlist(list.map((ev) => {
+      if (ev._id === id) return data.data;
+      return ev;
+    }));
   }
 
-  function onClear() {
-    setCat('All');
-    setSort('default');
+  function wipe() {
+    setcat('All');
+    setsort('default');
   }
 
-  function checkReg(ev) {
-    if (!user || !ev.attendees) return false;
-    const uid = String(user.id || user._id || '');
+  function done(ev) {
+    if (!user) return false;
+    if (!ev.attendees) return false;
+    let me = String(user.id || user._id || '');
     for (let att of ev.attendees) {
-      let aid = att;
+      let id = att;
       if (typeof att === 'object' && att !== null) {
-        aid = att._id || att.id;
+        id = att._id || att.id;
       }
-      if (String(aid) === uid) {
+      if (String(id) === me) {
         return true;
       }
     }
@@ -176,22 +140,22 @@ function Dashboard() {
 
   const cats = ['All', ...new Set(list.map((ev) => ev.category || 'General'))];
 
-  let items = list;
+  let rows = list;
   if (cat !== 'All') {
-    items = items.filter((ev) => (ev.category || 'General') === cat);
+    rows = rows.filter((ev) => (ev.category || 'General') === cat);
   }
   if (sort === 'asc') {
-    items = [...items].sort((a, b) => new Date(a.date) - new Date(b.date));
+    rows = [...rows].sort((a, b) => new Date(a.date) - new Date(b.date));
   }
   if (sort === 'desc') {
-    items = [...items].sort((a, b) => new Date(b.date) - new Date(a.date));
+    rows = [...rows].sort((a, b) => new Date(b.date) - new Date(a.date));
   }
 
-  let formTitle = 'Add New Event';
-  let formBtn = 'Create Event';
+  let head = 'Add New Event';
+  let btn = 'Create Event';
   if (edit) {
-    formTitle = 'Edit Event';
-    formBtn = 'Update Event';
+    head = 'Edit Event';
+    btn = 'Update Event';
   }
 
   return (
@@ -201,36 +165,36 @@ function Dashboard() {
         {user && <span className="user-badge">{user.name} ({userRole})</span>}
       </div>
 
-      {isAdmin && (
-        <form className="event-form" onSubmit={onSubmit}>
-          <h2>{formTitle}</h2>
+      {adm && (
+        <form className="event-form" onSubmit={sub}>
+          <h2>{head}</h2>
           <div className="form-grid">
             <input
               name="title"
               placeholder="Title"
               value={form.title}
-              onChange={onChange}
+              onChange={set}
               required
             />
             <input
               name="venue"
               placeholder="Venue"
               value={form.venue}
-              onChange={onChange}
+              onChange={set}
               required
             />
             <input
               name="date"
               type="date"
               value={form.date}
-              onChange={onChange}
+              onChange={set}
               required
             />
             <input
               name="organizer"
               placeholder="Organizer"
               value={form.organizer}
-              onChange={onChange}
+              onChange={set}
               required
             />
             <input
@@ -238,29 +202,29 @@ function Dashboard() {
               type="number"
               placeholder="Capacity"
               value={form.capacity}
-              onChange={onChange}
+              onChange={set}
               required
             />
             <input
               name="category"
               placeholder="Category"
               value={form.category}
-              onChange={onChange}
+              onChange={set}
             />
           </div>
           <textarea
             name="description"
             placeholder="Description"
             value={form.description}
-            onChange={onChange}
+            onChange={set}
             required
           />
           <div className="form-actions">
             <button type="submit" className="btn-primary">
-              {formBtn}
+              {btn}
             </button>
             {edit && (
-              <button type="button" className="btn-secondary" onClick={onCancel}>
+              <button type="button" className="btn-secondary" onClick={stop}>
                 Cancel
               </button>
             )}
@@ -271,7 +235,7 @@ function Dashboard() {
       <div className="filters">
         <div className="filter-group">
           <label>Category</label>
-          <select value={cat} onChange={(e) => setCat(e.target.value)}>
+          <select value={cat} onChange={(e) => setcat(e.target.value)}>
             {cats.map((c) => (
               <option key={c} value={c}>{c}</option>
             ))}
@@ -280,46 +244,47 @@ function Dashboard() {
 
         <div className="filter-group">
           <label>Sort by Date</label>
-          <select value={sort} onChange={(e) => setSort(e.target.value)}>
+          <select value={sort} onChange={(e) => setsort(e.target.value)}>
             <option value="default">Default</option>
             <option value="asc">Earliest First</option>
             <option value="desc">Latest First</option>
           </select>
         </div>
 
-        <button type="button" className="clear-btn" onClick={onClear}>
+        <button type="button" className="clear-btn" onClick={wipe}>
           Clear Filters
         </button>
       </div>
 
-      {err && <p className="error">{err}</p>}
-
       <div className="events-list">
-        <h2>Events ({items.length})</h2>
-        {items.length === 0 && <p className="empty">No events found.</p>}
-        {items.map((ev) => {
-          const isReg = checkReg(ev);
-          const count = ev.attendees ? ev.attendees.length : 0;
-          const isFull = count >= ev.capacity;
-          const isBusy = busy === ev._id;
+        <h2>Events ({rows.length})</h2>
+        {rows.length === 0 && <p className="empty">No events found.</p>}
+        {rows.map((ev) => {
+          const reg = done(ev);
+          let num = 0;
+          if (ev.attendees) {
+            num = ev.attendees.length;
+          }
+          const full = num >= ev.capacity;
 
-          let btnTxt = 'RSVP';
-          if (isBusy) {
-            btnTxt = 'Saving...';
-          } else if (isReg) {
-            btnTxt = 'Registered';
-          } else if (isFull) {
-            btnTxt = 'Full';
+          let txt = 'RSVP';
+          if (reg) {
+            txt = 'Registered';
+          } else if (full) {
+            txt = 'Full';
           }
 
-          let canRSVP = true;
-          if (isReg || isFull || isBusy || busy !== null) {
-            canRSVP = false;
+          let dis = false;
+          if (reg) {
+            dis = true;
+          }
+          if (full) {
+            dis = true;
           }
 
-          let dateStr = '';
+          let date = '';
           if (ev.date) {
-            dateStr = new Date(ev.date).toLocaleDateString();
+            date = new Date(ev.date).toLocaleDateString();
           }
 
           return (
@@ -329,12 +294,12 @@ function Dashboard() {
                   <h3>{ev.title}</h3>
                   <span className="badge">{ev.category || 'General'}</span>
                 </div>
-                {isAdmin && (
+                {adm && (
                   <div className="card-actions">
-                    <button type="button" className="btn-edit" onClick={() => onEdit(ev)}>
+                    <button type="button" className="btn-edit" onClick={() => pick(ev)}>
                       Edit
                     </button>
-                    <button type="button" className="btn-delete" onClick={() => onDelete(ev._id)}>
+                    <button type="button" className="btn-delete" onClick={() => del(ev._id)}>
                       Delete
                     </button>
                   </div>
@@ -344,20 +309,20 @@ function Dashboard() {
                     <button
                       type="button"
                       className="btn-rsvp"
-                      disabled={!canRSVP}
-                      onClick={() => onRSVP(ev._id)}
+                      disabled={dis}
+                      onClick={() => rsvp(ev._id)}
                     >
-                      {btnTxt}
+                      {txt}
                     </button>
                   </div>
                 )}
               </div>
               <p className="desc">{ev.description}</p>
               <div className="event-meta">
-                <span><strong>Date:</strong> {dateStr}</span>
+                <span><strong>Date:</strong> {date}</span>
                 <span><strong>Venue:</strong> {ev.venue}</span>
                 <span><strong>Organizer:</strong> {ev.organizer}</span>
-                <span><strong>Capacity:</strong> {count} / {ev.capacity}</span>
+                <span><strong>Capacity:</strong> {num} / {ev.capacity}</span>
               </div>
             </div>
           );
