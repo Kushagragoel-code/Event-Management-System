@@ -5,58 +5,58 @@ import { useAuth } from '../context/AuthContext';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function Login() {
-  const [formData, setFormData] = useState({ email: '', password: '' });
-  const [error, setError] = useState('');
+  const [form, setForm] = useState({ email: '', password: '' });
+  const [err, setErr] = useState('');
   const { login } = useAuth();
-  const navigate = useNavigate();
+  const nav = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  function onChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
 
-  const handleSubmit = async (e) => {
+  async function onSubmit(e) {
     e.preventDefault();
-    setError('');
+    setErr('');
     try {
       const res = await fetch(`${API_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(form)
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Login failed');
-
+      if (!res.ok) {
+        setErr(data.message || 'Login failed');
+        return;
+      }
       login(data.user, data.token);
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.message);
+      nav('/dashboard');
+    } catch (e) {
+      setErr(e.message);
     }
-  };
+  }
 
   return (
     <div className="auth-card">
-      <h2>Login to your account</h2>
-      {error && <div className="alert error">{error}</div>}
-      <form onSubmit={handleSubmit}>
+      <h2>Login</h2>
+      {err && <div className="alert error">{err}</div>}
+      <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label htmlFor="email">Email</label>
+          <label>Email</label>
           <input
-            id="email"
             type="email"
             name="email"
-            value={formData.email}
-            onChange={handleChange}
+            value={form.email}
+            onChange={onChange}
             required
           />
         </div>
         <div className="form-group">
-          <label htmlFor="password">Password</label>
+          <label>Password</label>
           <input
-            id="password"
             type="password"
             name="password"
-            value={formData.password}
-            onChange={handleChange}
+            value={form.password}
+            onChange={onChange}
             required
           />
         </div>
@@ -65,7 +65,7 @@ function Login() {
         </button>
       </form>
       <p className="auth-switch">
-        Don&apos;t have an account? <Link to="/register">Register here</Link>
+        Don&apos;t have an account? <Link to="/register">Register</Link>
       </p>
     </div>
   );

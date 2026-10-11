@@ -4,87 +4,81 @@ import { useNavigate, Link } from 'react-router-dom';
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
 
 function Register() {
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: '',
     email: '',
     password: '',
     role: 'User'
   });
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
-  const navigate = useNavigate();
+  const [err, setErr] = useState('');
+  const [msg, setMsg] = useState('');
+  const nav = useNavigate();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
+  function onChange(e) {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  }
 
-  const handleSubmit = async (e) => {
+  async function onSubmit(e) {
     e.preventDefault();
-    setError('');
-    setSuccess('');
+    setErr('');
+    setMsg('');
     try {
       const res = await fetch(`${API_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(form)
       });
       const data = await res.json();
-      if (!res.ok) throw new Error(data.message || 'Registration failed');
-
-      setSuccess('Registration successful! Redirecting to login...');
-      setTimeout(() => navigate('/login'), 1500);
-    } catch (err) {
-      setError(err.message);
+      if (!res.ok) {
+        setErr(data.message || 'Register failed');
+        return;
+      }
+      setMsg('Account created! Please login.');
+      setTimeout(() => nav('/login'), 1500);
+    } catch (e) {
+      setErr(e.message);
     }
-  };
+  }
 
   return (
     <div className="auth-card">
-      <h2>Create a new account</h2>
-      {error && <div className="alert error">{error}</div>}
-      {success && <div className="alert success">{success}</div>}
-      <form onSubmit={handleSubmit}>
+      <h2>Register</h2>
+      {err && <div className="alert error">{err}</div>}
+      {msg && <div className="alert success">{msg}</div>}
+      <form onSubmit={onSubmit}>
         <div className="form-group">
-          <label htmlFor="name">Full Name</label>
+          <label>Name</label>
           <input
-            id="name"
             type="text"
             name="name"
-            value={formData.name}
-            onChange={handleChange}
+            value={form.name}
+            onChange={onChange}
             required
           />
         </div>
         <div className="form-group">
-          <label htmlFor="email">Email</label>
+          <label>Email</label>
           <input
-            id="email"
             type="email"
             name="email"
-            value={formData.email}
-            onChange={handleChange}
+            value={form.email}
+            onChange={onChange}
             required
           />
         </div>
         <div className="form-group">
-          <label htmlFor="password">Password</label>
+          <label>Password</label>
           <input
-            id="password"
             type="password"
             name="password"
-            value={formData.password}
-            onChange={handleChange}
+            value={form.password}
+            onChange={onChange}
             required
           />
         </div>
         <div className="form-group">
-          <label htmlFor="role">Role</label>
-          <select
-            id="role"
-            name="role"
-            value={formData.role}
-            onChange={handleChange}
-          >
+          <label>Role</label>
+          <select name="role" value={form.role} onChange={onChange}>
             <option value="User">User</option>
             <option value="Admin">Admin</option>
           </select>
@@ -94,7 +88,7 @@ function Register() {
         </button>
       </form>
       <p className="auth-switch">
-        Already have an account? <Link to="/login">Login here</Link>
+        Already have an account? <Link to="/login">Login</Link>
       </p>
     </div>
   );
