@@ -432,5 +432,26 @@
   border-radius: 12px;
 }
 
+.btn-rsvp {
+  background: #0d6efd;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 5px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn-rsvp:hover:not(:disabled) {
+  background: #0b5ed7;
+}
+
+.btn-rsvp:disabled {
+  background: #6c757d;
+  color: #fff;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
 
 
