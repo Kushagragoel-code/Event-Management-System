@@ -3,11 +3,18 @@ import { AuthContext } from './AuthContext';
 
 export function AuthProvider({ children }) {
   // localstorage se saved user aur token nikal rahe
-  const savedUser = localStorage.getItem('user');
-  const savedToken = localStorage.getItem('token');
+  const savedToken = localStorage.getItem('token') || '';
 
-  const [user, setUser] = useState(savedUser ? JSON.parse(savedUser) : null);
-  const [token, setToken] = useState(savedToken || '');
+  const [user, setUser] = useState(() => {
+    try {
+      const savedUser = localStorage.getItem('user');
+      return savedUser ? JSON.parse(savedUser) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  const [token, setToken] = useState(savedToken);
 
   // login hone pe state aur localstorage update karenge
   const login = (userData, userToken) => {

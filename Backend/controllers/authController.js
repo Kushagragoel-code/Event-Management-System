@@ -11,7 +11,8 @@ const authController = {
         return res.status(400).json({ message: "Please fill all required fields." });
       }
 
-      const userExists = await User.findOne({ email });
+      const cleanEmail = email.trim().toLowerCase();
+      const userExists = await User.findOne({ email: cleanEmail });
       if (userExists) {
         return res.status(400).json({ message: "A user with this email already exists." });
       }
@@ -27,8 +28,8 @@ const authController = {
       }
 
       const user = await User.create({
-        name,
-        email,
+        name: name.trim(),
+        email: cleanEmail,
         password,
         role: userRole
       });
@@ -63,7 +64,8 @@ const authController = {
         return res.status(400).json({ message: "Please provide both email and password." });
       }
 
-      const user = await User.findOne({ email });
+      const cleanEmail = email.trim().toLowerCase();
+      const user = await User.findOne({ email: cleanEmail });
       if (!user) {
         return res.status(400).json({ message: "Invalid email or password." });
       }

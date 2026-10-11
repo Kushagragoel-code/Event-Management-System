@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const Event = require("../models/Event");
 
 const eventController = {
@@ -16,10 +17,10 @@ const eventController = {
 
       let events = Event.find(query);
 
-      if (sort === "asc") {
-        events = events.sort({ date: 1 });
-      } else if (sort === "desc") {
+      if (sort === "desc") {
         events = events.sort({ date: -1 });
+      } else {
+        events = events.sort({ date: 1 });
       }
 
       const allEvents = await events;
@@ -32,6 +33,10 @@ const eventController = {
 
   getEventById: async (req, res) => {
     try {
+      if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid event ID format." });
+      }
+
       const event = await Event.findById(req.params.id);
       if (!event) {
         return res.status(404).json({ message: "Event not found." });
@@ -56,11 +61,11 @@ const eventController = {
       }
 
       const newEvent = await Event.create({
-        title,
-        description,
+        title: title.trim(),
+        description: description.trim(),
         date,
-        venue,
-        organizer,
+        venue: venue.trim(),
+        organizer: organizer.trim(),
         capacity: Number(capacity),
         category: category || "General",
         createdBy: req.user.id,
@@ -76,6 +81,10 @@ const eventController = {
 
   updateEvent: async (req, res) => {
     try {
+      if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid event ID format." });
+      }
+
       if (req.body.date && new Date(req.body.date) < new Date()) {
         return res.status(400).json({ message: "Event date must be in the future." });
       }
@@ -93,6 +102,10 @@ const eventController = {
 
   deleteEvent: async (req, res) => {
     try {
+      if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid event ID format." });
+      }
+
       await Event.findByIdAndDelete(req.params.id);
       res.json({ message: "Event deleted successfully." });
     } catch (err) {
@@ -103,17 +116,22 @@ const eventController = {
 
   registerForEvent: async (req, res) => {
     try {
+      if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid event ID format." });
+      }
+
       const event = await Event.findById(req.params.id);
       if (!event) {
         return res.status(404).json({ message: "Event not found." });
       }
 
-      const already = event.attendees.some(id => id.toString() === req.user.id.toString());
+      const attendees = event.attendees || [];
+      const already = attendees.some(id => String(id) === String(req.user.id));
       if (already) {
         return res.status(400).json({ message: "You are already registered for this event." });
       }
 
-      if (event.attendees.length >= event.capacity) {
+      if (attendees.length >= Number(event.capacity)) {
         return res.status(400).json({ message: "Event has reached full capacity." });
       }
 
@@ -129,12 +147,16 @@ const eventController = {
 
   cancelEventRegistration: async (req, res) => {
     try {
+      if (!mongoose.isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: "Invalid event ID format." });
+      }
+
       const event = await Event.findById(req.params.id);
       if (!event) {
         return res.status(404).json({ message: "Event not found." });
       }
 
-      event.attendees = event.attendees.filter(id => id.toString() !== req.user.id.toString());
+      event.attendees = (event.attendees || []).filter(id => String(id) !== String(req.user.id));
       await event.save();
 
       res.json(event);
