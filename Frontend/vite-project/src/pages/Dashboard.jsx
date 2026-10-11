@@ -21,6 +21,7 @@ function Dashboard() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [sortOrder, setSortOrder] = useState('default');
   const [error, setError] = useState('');
+  const [registeringId, setRegisteringId] = useState(null);
 
   const isAdmin = userRole === 'Admin';
 
@@ -99,6 +100,29 @@ function Dashboard() {
   const handleCancelEdit = () => {
     setEditingId(null);
     setFormData(emptyForm);
+  };
+
+  const handleRSVP = async (eventId) => {
+    try {
+      setRegisteringId(eventId);
+      const res = await fetch(`${API_URL}/api/events/${eventId}/register`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to register for event');
+      }
+
+      setEvents(events.map((ev) => (ev._id === eventId ? data.data : ev)));
+      alert(data.message || 'Registered for event successfully');
+    } catch (err) {
+      alert(err.message || 'Failed to register for event');
+    } finally {
+      setRegisteringId(null);
+    }
   };
 
   const categories = ['All', ...new Set(events.map((e) => e.category || 'General'))];
@@ -234,33 +258,63 @@ function Dashboard() {
         {displayedEvents.length === 0 ? (
           <p className="empty">No events found.</p>
         ) : (
-          displayedEvents.map((event) => (
-            <div key={event._id} className="event-card">
-              <div className="event-card-header">
-                <div className="card-title-group">
-                  <h3>{event.title}</h3>
-                  <span className="badge">{event.category || 'General'}</span>
-                </div>
-                {isAdmin && (
-                  <div className="card-actions">
-                    <button type="button" className="btn-edit" onClick={() => handleEdit(event)}>
-                      Edit
-                    </button>
-                    <button type="button" className="btn-delete" onClick={() => handleDelete(event._id)}>
-                      Delete
-                    </button>
+          displayedEvents.map((event) => {
+            const isRegistered = event.attendees?.some(
+              (attendee) =>
+                (typeof attendee === 'object' && attendee !== null
+                  ? attendee._id || attendee.id
+                  : attendee
+                )?.toString() === (user?.id || user?._id)?.toString()
+            );
+            const isFull = (event.attendees?.length || 0) >= event.capacity;
+            const isRegistering = registeringId === event._id;
+
+            return (
+              <div key={event._id} className="event-card">
+                <div className="event-card-header">
+                  <div className="card-title-group">
+                    <h3>{event.title}</h3>
+                    <span className="badge">{event.category || 'General'}</span>
                   </div>
-                )}
+                  {isAdmin && (
+                    <div className="card-actions">
+                      <button type="button" className="btn-edit" onClick={() => handleEdit(event)}>
+                        Edit
+                      </button>
+                      <button type="button" className="btn-delete" onClick={() => handleDelete(event._id)}>
+                        Delete
+                      </button>
+                    </div>
+                  )}
+                  {user && userRole === 'User' && (
+                    <div className="card-actions">
+                      <button
+                        type="button"
+                        className="btn-rsvp"
+                        disabled={isRegistering || isRegistered || isFull || registeringId !== null}
+                        onClick={() => handleRSVP(event._id)}
+                      >
+                        {isRegistering
+                          ? 'Registering...'
+                          : isRegistered
+                          ? 'Registered'
+                          : isFull
+                          ? 'Event Full'
+                          : 'RSVP'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+                <p className="desc">{event.description}</p>
+                <div className="event-meta">
+                  <span><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</span>
+                  <span><strong>Venue:</strong> {event.venue}</span>
+                  <span><strong>Organizer:</strong> {event.organizer}</span>
+                  <span><strong>Capacity:</strong> {event.capacity}</span>
+                </div>
               </div>
-              <p className="desc">{event.description}</p>
-              <div className="event-meta">
-                <span><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</span>
-                <span><strong>Venue:</strong> {event.venue}</span>
-                <span><strong>Organizer:</strong> {event.organizer}</span>
-                <span><strong>Capacity:</strong> {event.capacity}</span>
-              </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>
